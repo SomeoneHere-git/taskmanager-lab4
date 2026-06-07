@@ -9,7 +9,6 @@ import (
 func TestAdmin_AddUserToTeam(t *testing.T) {
 	// EP: Позитивний. Додавання нового користувача у пусту команду.
 	t.Run("Add new user to empty team - Positive EP", func(t *testing.T) {
-		// Arrange
 		admin := &Admin{User: User{ID: 1}}
 		team := &Team{ID: 1, Name: "Dev"}
 		user := &User{ID: 2}
@@ -28,7 +27,6 @@ func TestAdmin_AddUserToTeam(t *testing.T) {
 
 	// EP: Негативний. Спроба додати існуючого користувача.
 	t.Run("Add existing user - Negative EP", func(t *testing.T) {
-		// Arrange
 		admin := &Admin{User: User{ID: 1}}
 		user := &User{ID: 2}
 		team := &Team{ID: 1, Name: "Dev", Members: []*User{user}}
@@ -50,7 +48,6 @@ func TestAdmin_AddUserToTeam(t *testing.T) {
 func TestAdmin_RemoveUserFromTeam(t *testing.T) {
 	// BVA: Позитивний. Видалення користувача, коли в команді лише він (межа масиву: 1 -> 0)
 	t.Run("Remove only user from team - Positive BVA", func(t *testing.T) {
-		// Arrange
 		admin := &Admin{User: User{ID: 1}}
 		user := &User{ID: 2}
 		team := &Team{ID: 1, Name: "Dev", Members: []*User{user}}
@@ -69,7 +66,6 @@ func TestAdmin_RemoveUserFromTeam(t *testing.T) {
 
 	// EP: Негативний. Спроба видалити користувача, якого немає в команді.
 	t.Run("Remove non-existent user - Negative EP", func(t *testing.T) {
-		// Arrange
 		admin := &Admin{User: User{ID: 1}}
 		user1 := &User{ID: 2}
 		user2 := &User{ID: 3}
@@ -174,16 +170,15 @@ func TestTask_SubscribeUser(t *testing.T) {
 		if err != nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
-		if len(task.AssignedUsers) != 1 || task.AssignedUsers[0].ID != 10 {
+		if len(task.AssignedUsers) != 1 || task.AssignedUsers[10] == nil || task.AssignedUsers[10].ID != 10 {
 			t.Errorf("User was not subscribed correctly")
 		}
 	})
 
 	// EP: Негативний. Спроба підписатись двічі.
 	t.Run("Subscribe duplicate user - Negative EP", func(t *testing.T) {
-		// Arrange
 		user := &User{ID: 10}
-		task := &Task{ID: 1, Description: "Task A", AssignedUsers: []*User{user}}
+		task := &Task{ID: 1, Description: "Task A", AssignedUsers: map[int]*User{user.ID: user}}
 
 		// Act
 		err := task.SubscribeUser(user)
@@ -229,9 +224,9 @@ func TestOtherMethods(t *testing.T) {
 		ns := &NotificationService{}
 		task := &Task{Description: "A", Timer: &Timer{RemainingTime: 0}}
 		// Act
-		msg := ns.NotifyDeadlineReached(task)
+		notified := ns.NotifyDeadlineReached(task)
 		// Assert
-		if msg == "" {
+		if !notified {
 			t.Error("Expected notification message")
 		}
 	})
